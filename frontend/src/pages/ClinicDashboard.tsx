@@ -4,15 +4,16 @@ import styled from "styled-components";
 import { api, FollowUp, Notification } from "../api";
 
 const Container = styled.div`
-  max-width: 1200px;
+  width: 100%; /* Full width of parent */
+  max-width: 1200px; /* Keeps content readable on large screens */
   margin: 0 auto;
+  padding: 20px;
 `;
 
 const Header = styled.h1`
   font-size: 2.5rem;
   color: #2c3e50;
   text-align: center;
-  margin-bottom: 20px;
 `;
 
 const Card = styled.div<{ isConcern?: boolean }>`
@@ -21,21 +22,15 @@ const Card = styled.div<{ isConcern?: boolean }>`
   padding: 20px;
   margin: 15px 0;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s;
-  &:hover {
-    transform: translateY(-5px);
-  }
 `;
 
 const Button = styled.button`
   background: #3498db;
   color: white;
   padding: 10px 20px;
-  border: none;
   border-radius: 8px;
+  border: none;
   cursor: pointer;
-  font-weight: bold;
-  transition: background 0.3s;
   &:hover {
     background: #2980b9;
   }
@@ -46,7 +41,6 @@ const Input = styled.input`
   margin: 10px 10px 10px 0;
   border: 1px solid #ddd;
   border-radius: 8px;
-  font-size: 1rem;
   width: 200px;
 `;
 
@@ -58,15 +52,6 @@ const NotificationBanner = styled.div`
   margin-bottom: 15px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-`;
-
-const DismissButton = styled.button`
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1rem;
-  cursor: pointer;
 `;
 
 const ClinicDashboard: React.FC = () => {
@@ -91,7 +76,7 @@ const ClinicDashboard: React.FC = () => {
       setNotifications(notificationsRes.data);
       setError(null);
     } catch (err) {
-      setError("Failed to fetch data");
+      setError("Failed to fetch data. Please try again.");
     }
   };
 
@@ -99,42 +84,25 @@ const ClinicDashboard: React.FC = () => {
     try {
       await api.addPatient(newPatient);
       setNewPatient({ name: "", procedure: "" });
-      fetchData();
-      setError(null);
+      await fetchData();
     } catch (err) {
-      setError("Failed to add patient");
+      setError("Failed to add patient.");
     }
   };
 
-  const dismissNotification = (id: string) => {
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
-  };
-
   return (
-    <Container
-      style={{
-        width: "100%",
-      }}
-    >
+    <Container>
       <Header>Clinic Dashboard</Header>
       {error && (
         <p style={{ color: "#e74c3c", textAlign: "center" }}>{error}</p>
       )}
-      {notifications.length > 0 && (
-        <div>
-          <h3 style={{ color: "#2c3e50" }}>Urgent Notifications</h3>
-          {notifications.map((note) => (
-            <NotificationBanner key={note.id}>
-              {note.message} - {new Date(note.createdAt).toLocaleString()}
-              <DismissButton onClick={() => dismissNotification(note.id)}>
-                ✖
-              </DismissButton>
-            </NotificationBanner>
-          ))}
-        </div>
-      )}
+      {notifications.map((note) => (
+        <NotificationBanner key={note.id}>
+          {note.message} - {new Date(note.createdAt).toLocaleString()}
+        </NotificationBanner>
+      ))}
       <Card>
-        <h3 style={{ color: "#34495e" }}>Add New Patient</h3>
+        <h3>Add New Patient</h3>
         <Input
           value={newPatient.name}
           onChange={(e) =>
@@ -151,31 +119,17 @@ const ClinicDashboard: React.FC = () => {
         />
         <Button onClick={addPatient}>Add Patient</Button>
       </Card>
-      <h2 style={{ color: "#2c3e50", marginTop: "30px" }}>Follow-Ups</h2>
+      <h2>Follow-Ups</h2>
       {followUps.map((followUp) => (
         <Card key={followUp.id} isConcern={followUp.status === "CONCERN"}>
-          <p style={{ fontSize: "1.1rem", color: "#34495e" }}>
+          <p>
             <strong>{followUp.patient.name}</strong> -{" "}
             {followUp.patient.procedure}
           </p>
           <p>Scheduled: {new Date(followUp.scheduledAt).toLocaleString()}</p>
-          <p>
-            Status:{" "}
-            <span
-              style={{
-                color: followUp.status === "CONCERN" ? "#e74c3c" : "#27ae60",
-              }}
-            >
-              {followUp.status}
-            </span>
-          </p>
+          <p>Status: {followUp.status}</p>
           {followUp.response && <p>Response: {followUp.response}</p>}
-          <a
-            href={`/patient/${followUp.id}`}
-            style={{ color: "#3498db", textDecoration: "none" }}
-          >
-            Respond
-          </a>
+          <a href={`/patient/${followUp.id}`}>Respond</a>
         </Card>
       ))}
     </Container>

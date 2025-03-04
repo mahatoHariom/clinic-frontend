@@ -8,10 +8,10 @@ const AppContainer = styled.div`
   font-family: "Roboto", sans-serif;
   min-height: 100vh;
   background: linear-gradient(135deg, #f0f4f8 0%, #e1e8ed 100%);
-  width: 100%;
+  width: 100vw; /* Full viewport width */
   padding: 20px;
+  box-sizing: border-box; /* Ensures padding doesn't overflow */
 `;
-
 const App: React.FC = () => {
   return (
     <AppContainer>
